@@ -1,5 +1,6 @@
 
 name: Commit Stage
+
 on: push
 
 jobs:
@@ -25,6 +26,13 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kubectl create --dry-run=client --validate=false \
+            -f k8s/deployment.yml \
+            -f k8s/service.yml \
+            -o yaml > /dev/null
 
       - name: Code vulnerability scanning
         uses: anchore/scan-action@v6
