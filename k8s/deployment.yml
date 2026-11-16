@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,9 +14,16 @@ spec:
         app: edge-service
     spec:
       containers:
+        - name: keycloak-proxy
+          image: alpine/socat:1.8.0.3
+          imagePullPolicy: IfNotPresent
+          args:
+            - TCP-LISTEN:8080,fork,reuseaddr,bind=127.0.0.1
+            - TCP:host.minikube.internal:8080
+
         - name: edge-service
           image: ghcr.io/p466-heer/edge-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           ports:
             - containerPort: 9000
           env:

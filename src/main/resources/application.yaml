@@ -1,4 +1,3 @@
-
 server:
   port: 9000
   shutdown: graceful
@@ -21,9 +20,28 @@ spring:
       timeout: 1s
 
   session:
+    store-type: redis
     timeout: 10m
     redis:
       namespace: polar:edge
+
+  # Keycloak OAuth2 authentication
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: edge-service
+            client-secret: polar-keycloak-secret
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/PolarBookshop
+
+      # JWT authentication for bearer-token API requests
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/PolarBookshop
 
   cloud:
     gateway:
@@ -35,6 +53,7 @@ spring:
 
           default-filters:
             - SaveSession
+
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter:
@@ -60,6 +79,7 @@ spring:
               predicates:
                 - Path=/books/**
               filters:
+                - TokenRelay
                 - name: CircuitBreaker
                   args:
                     name: catalogCircuitBreaker
